@@ -32,7 +32,7 @@ function vim.paste(lines, phase)
   end
   if mode:find('^i') or mode:find('^n?t') then  -- Insert mode or Terminal buffer
     vim.api.nvim_put(lines, 'c', false, true)
-  elseif phase == -1 and mode:find('^R') and not mode:find('^Rv') then  -- Replace mode
+  elseif phase < 2 and mode:find('^R') and not mode:find('^Rv') then  -- Replace mode
     -- TODO: implement Replace mode streamed pasting
     -- TODO: support Virtual Replace mode
     local nchars = 0
