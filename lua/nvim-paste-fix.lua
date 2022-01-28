@@ -10,6 +10,11 @@ function vim.paste(lines, phase)
   if #lines == 0 then
     lines = {''}
   end
+  if #lines == 1 and lines[1] == '' and not is_last_chunk then
+    -- An empty chunk can cause some edge cases in streamed pasting,
+    -- so don't do anything unless it is the last chunk.
+    return true
+  end
   -- Note: mode doesn't always start with "c" in cmdline mode, so use getcmdtype() instead.
   if vim.fn.getcmdtype() ~= '' then  -- cmdline-mode: paste only 1 line.
     if not got_line1 then
@@ -19,11 +24,6 @@ function vim.paste(lines, phase)
       vim.api.nvim_input(line1)
       vim.api.nvim_set_option('paste', false)
     end
-    return true
-  end
-  if #lines == 1 and lines[1] == '' and not is_last_chunk then
-    -- An empty chunk can cause some edge cases in streamed pasting,
-    -- so don't do anything unless it is the last chunk.
     return true
   end
   local mode = vim.api.nvim_get_mode().mode
