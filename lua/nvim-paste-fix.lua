@@ -20,7 +20,8 @@ function vim.paste(lines, phase)
     if not got_line1 then
       got_line1 = (#lines > 1)
       vim.api.nvim_set_option('paste', true)  -- For nvim_input().
-      local line1 = lines[1]:gsub('<', '<lt>'):gsub('[\r\n\012\027]', ' ')  -- Scrub.
+      -- Escape "<" and control characters
+      local line1 = lines[1]:gsub('<', '<lt>'):gsub('(%c)', '\022%1')
       vim.api.nvim_input(line1)
       vim.api.nvim_set_option('paste', false)
     end
