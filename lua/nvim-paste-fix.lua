@@ -4,11 +4,11 @@ function vim.paste(lines, phase)
   local now = vim.loop.now()
   local is_first_chunk = phase < 2
   local is_last_chunk = phase == -1 or phase == 3
-  if is_first_chunk then  -- Reset flags.
+  if is_first_chunk then -- Reset flags.
     tdots, tick, got_line1, undo_started, trailing_nl = now, 0, false, false, false
   end
   if #lines == 0 then
-    lines = {''}
+    lines = { '' }
   end
   if #lines == 1 and lines[1] == '' and not is_last_chunk then
     -- An empty chunk can cause some edge cases in streamed pasting,
@@ -16,7 +16,7 @@ function vim.paste(lines, phase)
     return true
   end
   -- Note: mode doesn't always start with "c" in cmdline mode, so use getcmdtype() instead.
-  if vim.fn.getcmdtype() ~= '' then  -- cmdline-mode: paste only 1 line.
+  if vim.fn.getcmdtype() ~= '' then -- cmdline-mode: paste only 1 line.
     if not got_line1 then
       got_line1 = (#lines > 1)
       -- Escape control characters
@@ -31,9 +31,9 @@ function vim.paste(lines, phase)
   if undo_started then
     vim.api.nvim_command('undojoin')
   end
-  if mode:find('^i') or mode:find('^n?t') then  -- Insert mode or Terminal buffer
+  if mode:find('^i') or mode:find('^n?t') then -- Insert mode or Terminal buffer
     vim.api.nvim_put(lines, 'c', false, true)
-  elseif phase < 2 and mode:find('^R') and not mode:find('^Rv') then  -- Replace mode
+  elseif phase < 2 and mode:find('^R') and not mode:find('^Rv') then -- Replace mode
     -- TODO: implement Replace mode streamed pasting
     -- TODO: support Virtual Replace mode
     local nchars = 0
@@ -41,26 +41,26 @@ function vim.paste(lines, phase)
       nchars = nchars + line:len()
     end
     local row, col = unpack(vim.api.nvim_win_get_cursor(0))
-    local bufline = vim.api.nvim_buf_get_lines(0, row-1, row, true)[1]
+    local bufline = vim.api.nvim_buf_get_lines(0, row - 1, row, true)[1]
     local firstline = lines[1]
-    firstline = bufline:sub(1, col)..firstline
+    firstline = bufline:sub(1, col) .. firstline
     lines[1] = firstline
-    lines[#lines] = lines[#lines]..bufline:sub(col + nchars + 1, bufline:len())
-    vim.api.nvim_buf_set_lines(0, row-1, row, false, lines)
-  elseif mode:find('^[nvV\22sS\19]') then  -- Normal or Visual or Select mode
-    if mode:find('^n') then  -- Normal mode
+    lines[#lines] = lines[#lines] .. bufline:sub(col + nchars + 1, bufline:len())
+    vim.api.nvim_buf_set_lines(0, row - 1, row, false, lines)
+  elseif mode:find('^[nvV\22sS\19]') then -- Normal or Visual or Select mode
+    if mode:find('^n') then -- Normal mode
       -- When there was a trailing new line in the previous chunk,
       -- the cursor is on the first character of the next line,
       -- so paste before the cursor instead of after it.
       vim.api.nvim_put(lines, 'c', not trailing_nl, false)
-    else  -- Visual or Select mode
+    else -- Visual or Select mode
       vim.api.nvim_command([[exe "silent normal! \<Del>"]])
       local del_start = vim.fn.getpos("'[")
       local cursor_pos = vim.fn.getpos('.')
-      if mode:find('^[VS]') then  -- linewise
-        if cursor_pos[2] < del_start[2] then  -- replacing lines at eof
+      if mode:find('^[VS]') then -- linewise
+        if cursor_pos[2] < del_start[2] then -- replacing lines at eof
           -- create a new line
-          vim.api.nvim_put({''}, 'l', true, true)
+          vim.api.nvim_put({ '' }, 'l', true, true)
         end
         vim.api.nvim_put(lines, 'c', false, false)
       else
@@ -71,7 +71,7 @@ function vim.paste(lines, phase)
     -- put cursor at the end of the text instead of one character after it
     vim.fn.setpos('.', vim.fn.getpos("']"))
     trailing_nl = lines[#lines] == ''
-  else  -- Don't know what to do in other modes
+  else -- Don't know what to do in other modes
     return false
   end
   undo_started = true
@@ -84,9 +84,9 @@ function vim.paste(lines, phase)
     vim.api.nvim_command(('echo "%s"'):format(dots))
   end
   if is_last_chunk then
-    vim.api.nvim_command('redraw'..(tick > 1 and '|echo ""' or ''))
+    vim.api.nvim_command('redraw' .. (tick > 1 and '|echo ""' or ''))
   end
-  return true  -- Paste will not continue if not returning `true`.
+  return true -- Paste will not continue if not returning `true`.
 end
 
 if vim.fn == nil then
@@ -94,10 +94,10 @@ if vim.fn == nil then
     __index = function(t, key)
       local _fn
       _fn = function(...)
-        return vim.api.nvim_call_function(key, {...})
+        return vim.api.nvim_call_function(key, { ... })
       end
       t[key] = _fn
       return _fn
-    end
+    end,
   })
 end
